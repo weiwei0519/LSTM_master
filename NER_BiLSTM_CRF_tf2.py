@@ -20,6 +20,7 @@ import numpy as np
 # 查看tensorflow和tensorflow-addons的版本号
 print(tf.__version__)
 print(tfa.__version__)
+training_testing = "testing"  # training训练模式，testing测试模式
 
 # 加载数据集
 char_vocab_path = "./Datasets/NER/char_vocabs.txt"  # 字典文件
@@ -135,12 +136,18 @@ labels = np.ones(len(train_labels))
 
 print(np.shape(train_words), np.shape(train_labels))
 
-# 训练模型
-model.fit(x=[train_words, train_labels, train_seq_lens], y=labels,
-          validation_split=0.1, batch_size=BATCH_SIZE, epochs=EPOCHS)
+if training_testing == "training":
+    # 训练模型
+    model.fit(x=[train_words, train_labels, train_seq_lens], y=labels,
+              validation_split=0.1, batch_size=BATCH_SIZE, epochs=EPOCHS)
 
-# 保存
-model.save("./model/bilstm_crf_ner.h5py")
+    # 保存
+    model.save("./model/bilstm_crf_ner.h5py")
+elif training_testing == "testing":
+    # 加载模型
+    model = models.load_model("./model/bilstm_crf_ner.h5py", custom_objects={'<lambda>': lambda y_true, y_pred: y_pred},
+                              compile=True)
+
 trans_params = model.get_layer('crf').get_weights()[0]
 print(trans_params)
 # 获得BiLSTM的输出logits
